@@ -1,51 +1,33 @@
-'''
-The cross-validated accuracy of the model with pre-training is:
-The cross-validated accuracy of the model w/o pre-training is:
-
-
-
-The final accuracy of the 
-'''
-
 import torch
 from torch import nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset, TensorDataset
 import pandas as pd
 from sklearn.model_selection import KFold
-from sklearn.model_selection import train_test_split
 import numpy as np
-import random
-from torch.nn.utils.rnn import pad_sequence
 
 
 
-
-
-
-
-# Constants
-MAX_LEN_ANTIGEN = 21
+MAX_LEN_ANTIGEN = 21 
 MAX_LEN_TCR = 21
 EMBEDDING_DIM = 256
 AMINO_ACIDS = 'ACDEFGHIKLMNPQRSTVWYX'
 
 char_to_index = {ch: idx for idx, ch in enumerate(AMINO_ACIDS)}
 
-# Helper Functions
+# Encodes a sequence of amino acids into a tensor of indices
 def encode_sequence(seq, max_len):
     encoded = torch.zeros(max_len, dtype=torch.long)
     for i, char in enumerate(seq[:max_len]):
         encoded[i] = char_to_index.get(char, char_to_index['X'])  # 'X' for unknown or padding
     return encoded
 
+# Necessary for DataLoader
 def create_sequence_data_loader(sequences, max_len, batch_size=32):
     encoded_sequences = [encode_sequence(seq, max_len) for seq in sequences]
     sequences_tensor = torch.stack(encoded_sequences)
     dataset = TensorDataset(sequences_tensor)  # Ensure this is just one tensor per batch
     return DataLoader(dataset, batch_size=batch_size, shuffle=True)
-
-
 
 def load_data(filename):
     data = pd.read_csv(filename)
@@ -107,8 +89,6 @@ def pretrain_tfm_model(model, data_loader, n_epochs):
         print(f"Epoch {epoch+1}, Average Loss: {total_loss / len(data_loader)}")
 
     
-
-
 def make_predict_model(M_antigen, M_tcr):
     model = InteractionModel(M_antigen, M_tcr)
     return model
@@ -206,7 +186,6 @@ def predict(M, L_antigen, L_tcr):
     L_antigen = L_antigen.to(device)  #
     L_tcr = L_tcr.to(device)  
 
-    
     if L_antigen.dim() == 4:  
         L_antigen = L_antigen.squeeze(0)
     if L_tcr.dim() == 4:
