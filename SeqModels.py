@@ -1,3 +1,7 @@
+## Created by: Joel Rogers
+## Date: 2024-5-10
+
+
 import torch
 from torch import nn
 import torch.optim as optim
